@@ -19,6 +19,20 @@ dynamodb_client = boto3.client("dynamodb")
 
 
 def handler(event, context):
+    # Log security-relevant request context
+    request_context = event.get("requestContext", {})
+    identity = request_context.get("identity", {})
+    
+    logger.info(json.dumps({
+        "event_type": "api_request",
+        "request_id": context.request_id,
+        "source_ip": identity.get("sourceIp"),
+        "user_agent": identity.get("userAgent"),
+        "request_time": request_context.get("requestTime"),
+        "http_method": request_context.get("httpMethod"),
+        "resource_path": request_context.get("resourcePath"),
+    }))
+    
     table = os.environ.get("TABLE_NAME")
     logging.info(f"## Loaded table name from environemt variable DDB_TABLE: {table}")
     if event["body"]:
